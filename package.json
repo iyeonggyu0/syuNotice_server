@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "applicationinsights": "^3.4.0",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "cheerio": "^1.0.0",
