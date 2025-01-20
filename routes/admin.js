@@ -441,4 +441,47 @@ router.post("/user-delete", async (req, res, next) => {
   }
 });
 
+router.get("/log-create", async (req, res, next) => {
+  try {
+    const findData_create = ServerLog.findAll({ where: { detail: "가입" } });
+    const findData_delete = ServerLog.findAll({ where: { detail: "탈퇴" } });
+
+    return res.status(200).send({
+      findData_create: {
+        value: findData_create.length || 0,
+        console: encryptFun(findData_create, ""),
+      },
+      findData_delete: {
+        value: findData_delete.length || 0,
+        console: encryptFun(findData_delete, ""),
+      },
+    });
+  } catch (error) {
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "생성/탈퇴 로그 조회중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
+    res.status(401).send("Server에서 문제가 발생했습니다.");
+    next(error);
+  }
+});
+
+router.get("/log-find", async (req, res, next) => {
+  try {
+    const findData = await ServerLog.findAll({});
+    if (findData) {
+      return res.status(200).send(encryptFun(findData, ""));
+    }
+  } catch (error) {
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "로그 조회중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
+    res.status(401).send("Server에서 문제가 발생했습니다.");
+    next(error);
+  }
+});
+
 module.exports = router;
