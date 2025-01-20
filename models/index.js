@@ -10,6 +10,7 @@ db.UserTag = require("./UserTag")(sequelize, Sequelize);
 db.Notice = require("./Notice")(sequelize, Sequelize);
 db.NoticeTag = require("./NoticeTag")(sequelize, Sequelize);
 db.UserPNCerti = require("./UserPNCerti")(sequelize, Sequelize);
+db.ServerLog = require("./ServerLog")(sequelize, Sequelize);
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {

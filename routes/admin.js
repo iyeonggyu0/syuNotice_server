@@ -10,7 +10,7 @@ const https = require("https");
 const cheerio = require("cheerio");
 const moment = require("moment"); // 날짜 계산을 위해 moment.js를 사용
 
-const { Notice, NoticeTag, UserTag, User, MsgData, MsgLog } = require("../models");
+const { Notice, NoticeTag, UserTag, User, ServerLog } = require("../models");
 
 // 사용자 조회
 router.get("/user-num", async (req, res, next) => {
@@ -24,19 +24,29 @@ router.get("/user-num", async (req, res, next) => {
           include: [
             {
               model: NoticeTag, // UserTag와 연결된 NoticeTag를 포함
-              attributes: ["id", "name", "description"], // 필요한 속성만 선택
+              attributes: ["id", "notice_id", "createdAt"],
             },
           ],
         },
       ],
     });
     if (userList) {
+      await ServerLog.create({
+        detail: "사용자 조회 (admin)",
+      });
       return res.status(200).send({ value: userList.length, console: encryptFun(userList, "") });
     } else {
+      await ServerLog.create({
+        detail: "사용자 조회 (admin)",
+      });
       return res.status(400).send({ value: 0, console: encryptFun([], "") });
     }
   } catch (error) {
     console.error(error);
+    await ServerLog.create({
+      detail: "사용자 조회 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -46,12 +56,12 @@ router.get("/user-num", async (req, res, next) => {
 router.get("/remaining-msg", async (req, res, next) => {
   // 전송 데이터
   const form = new FormData();
-  form.append("mberId", process.env.SMG_ON_API_ID);
-  form.append("accessKey", process.env.SMG_ON_KEY);
+  form.append("mberId", process.env.API_MSG_ON_ID);
+  form.append("accessKey", process.env.API_MSG_ON_KEY);
 
   // 요청 보내기
   try {
-    const response = await axios.post(`${process.env.MSG_REMAINING_URL}`, form, {
+    const response = await axios.post(`${process.env.API_MSG_URL_REMAINING}`, form, {
       headers: {
         ...form.getHeaders(), // form-data 헤더 추가
       },
@@ -60,12 +70,23 @@ router.get("/remaining-msg", async (req, res, next) => {
     // 응답 처리
     if (response.data.resultCode !== "0") {
       // resultCode가 '0'이 아니면 401 응답 보내기
-      return res.status(401).send("Server에서 문제가 발생했습니다.");
+      await ServerLog.create({
+        detail: "API 오류 (admin)",
+        log: JSON.stringify(response.data),
+      });
+      return res.status(401).send("API 오류");
     }
 
+    await ServerLog.create({
+      detail: "문자 남은 전송량/단가 조회 (admin)",
+    });
     // 정상적인 응답인 경우
     return res.status(200).send({ value1: response.data.data.shortSendPsbltEa, value2: response.data.data.shortPrice });
   } catch (error) {
+    await ServerLog.create({
+      detail: "문자 남은 전송량/단가 조회 서버 오류",
+      log: JSON.stringify(error),
+    });
     // 요청 중 오류가 발생한 경우
     console.error("Error:", error.response ? error.response.data : error.message);
     next(error); // 에러를 전달하여 에러 처리 미들웨어로 보냄
@@ -76,18 +97,26 @@ router.get("/remaining-msg", async (req, res, next) => {
 router.get("/msg-log", async (req, res, next) => {
   try {
     const form = new FormData();
-    form.append("mberId", process.env.SMG_ON_API_ID);
-    form.append("accessKey", process.env.SMG_ON_KEY);
+    form.append("mberId", process.env.API_MSG_ON_ID);
+    form.append("accessKey", process.env.API_MSG_ON_KEY);
     form.append("pageSize", "100");
 
-    const response = await axios.post(process.env.SMG_LOG, form, {
+    const response = await axios.post(process.env.API_MSG_URL_LOG, form, {
       headers: {
         ...form.getHeaders(),
         "Content-Type": "multipart/form-data",
       },
     });
+
+    await ServerLog.create({
+      detail: "메세지 발송 로그 조회 (admin)",
+    });
     res.status(response.status).send(encryptFun(response.data, ""));
   } catch (error) {
+    await ServerLog.create({
+      detail: "메세지 발송 로그 조회 중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -228,6 +257,10 @@ router.get("/notice-num", async (req, res, next) => {
       ],
     });
 
+    await ServerLog.create({
+      detail: "저장된 공지 조회 (admin)",
+    });
+
     res.status(200).send({
       NoticeList: { value: NoticeList.length, console: encryptFun(NoticeList || [], "") },
       nowWeekNoticeList: {
@@ -243,6 +276,10 @@ router.get("/notice-num", async (req, res, next) => {
       weekNoticeList_event: { value: weekNoticeList_event.length, console: encryptFun(weekNoticeList_event || [], "") },
     });
   } catch (error) {
+    await ServerLog.create({
+      detail: "저장된 공지 조회 중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -259,8 +296,15 @@ router.get("/usertag-num", async (req, res, next) => {
       group: ["tag"],
     });
 
+    await ServerLog.create({
+      detail: "전체 태그 조회 (admin)",
+    });
     res.status(200).send({ value: userTag.length, console: encryptFun(userTag || [], "") });
   } catch (error) {
+    await ServerLog.create({
+      detail: "전체 태그 조회 중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -271,8 +315,17 @@ router.get("/user-find/:student_id", async (req, res, next) => {
   try {
     const data = await User.findAll({ where: { student_id: student_id } });
 
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "사용자 단일 정보 조회 (admin)",
+    });
     return res.status(201).send(encryptFun(data, student_id));
   } catch (error) {
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "사용자 단일 정보 조회 중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -300,9 +353,18 @@ router.get("/user-updata/pn", async (req, res, next) => {
     const updata = await User.findAll({ where: { student_id: student_id } });
 
     if (updata) {
+      await ServerLog.create({
+        student_id: student_id,
+        detail: "핸드폰 번호 수정 (admin)",
+      });
       return res.status(201).send(encryptFun(updata, student_id));
     }
   } catch (error) {
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "핸드폰 번호 수정 중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -330,9 +392,18 @@ router.get("/user-updata/name", async (req, res, next) => {
     const updata = await User.findAll({ where: { student_id: student_id } });
 
     if (updata) {
+      await ServerLog.create({
+        student_id: student_id,
+        detail: "이름 수정 (admin)",
+      });
       return res.status(201).send(encryptFun(updata, student_id));
     }
   } catch (error) {
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "이름 수정 중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -346,11 +417,25 @@ router.post("/user-delete", async (req, res, next) => {
     });
 
     if (data) {
+      await ServerLog.create({
+        student_id: deleteId,
+        detail: "유저 탈퇴 (admin)",
+      });
       return res.status(200).send(encryptFun(data, deleteId));
     } else {
+      await ServerLog.create({
+        student_id: deleteId,
+        detail: "유저 탈퇴 실패 (admin)",
+        log: JSON.stringify(err),
+      });
       return res.status(401).send("실패하였습니다.");
     }
   } catch (error) {
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "유저 탈퇴 작업 중 서버 오류 (admin)",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }

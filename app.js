@@ -8,11 +8,9 @@ const fs = require("fs");
 const PORT = 5000;
 
 const userRouter = require("./routes/user");
-const noticeRouter = require("./routes/notice");
+// const noticeRouter = require("./routes/notice");
 const adminRouter = require("./routes/admin");
-require("./routes/auto"); // cron.js 파일을 불러옴
-
-const axios = require("axios");
+const autoRouter = require("./routes/auto");
 
 const db = require("./models");
 
@@ -40,9 +38,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/notice", noticeRouter);
+// app.use("/api/notice", noticeRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
+// 주석
+app.use("/api/auto", autoRouter);
 
 app.listen(PORT, () => {
   console.log(`${PORT}포트에서 서버 실행중...`);

@@ -8,11 +8,10 @@ const qs = require("qs");
 const FormData = require("form-data");
 const moment = require("moment");
 
-const { User, UserTag, UserPNCerti } = require("../models");
+const { User, UserTag, UserPNCerti, ServerLog } = require("../models");
 
 //** { studentId: studentId, pn: pn } 형식으로 받아 T/F을 리턴 */
 router.post("/send-phonenumber", async (req, res, next) => {
-  console.log("실행", req.body);
   try {
     const fiveMinutesAgo = Sequelize.literal("NOW() - INTERVAL 5 MINUTE");
 
@@ -40,9 +39,9 @@ router.post("/send-phonenumber", async (req, res, next) => {
       // 생성된 데이터가 있으면 SMS 전송
       if (createData) {
         const form1 = new FormData();
-        form1.append("mberId", process.env.SMG_ON_API_ID);
-        form1.append("accessKey", process.env.SMG_ON_KEY);
-        const msgNum = await axios.post(`${process.env.MSG_REMAINING_URL}`, form1, {
+        form1.append("mberId", process.env.API_MSG_ON_ID);
+        form1.append("accessKey", process.env.API_MSG_ON_KEY);
+        const msgNum = await axios.post(`${process.env.API_MSG_URL_REMAINING}`, form1, {
           headers: {
             ...form1.getHeaders(), // form-data 헤더 추가
           },
@@ -53,16 +52,16 @@ router.post("/send-phonenumber", async (req, res, next) => {
         }
 
         const form2 = new FormData();
-        form2.append("mberId", process.env.SMG_ON_API_ID);
-        form2.append("accessKey", process.env.SMG_ON_KEY);
-        form2.append("callFrom", process.env.SMG_ON_API_PN);
+        form2.append("mberId", process.env.API_MSG_ON_ID);
+        form2.append("accessKey", process.env.API_MSG_ON_KEY);
+        form2.append("callFrom", process.env.API_MSG_ON_PN);
         form2.append("test_yn", "");
         form2.append("callToList", decryptFun(req.body.student_PN, req.body.student_id));
         form2.append("smsTxt", `[syuNotice] 인증 번호는 [ ${num} ]입니다.`);
 
-        // res.status(201).send("발신이 꺼져있습니다 (개발모드)");
+        // return res.status(201).send("발신이 꺼져있습니다 (개발모드)");
         // 발송 로직
-        const response = await axios.post(`${process.env.MSG_ONE_URL}`, form2, {
+        const response = await axios.post(`${process.env.API_MSG_URL_ONE_SEND}`, form2, {
           headers: {
             ...form2.getHeaders(), // form-data 헤더 추가
           },
@@ -83,6 +82,11 @@ router.post("/send-phonenumber", async (req, res, next) => {
     }
   } catch (err) {
     console.error(err);
+    await ServerLog.create({
+      student_id: req.body.student_id,
+      detail: "인증번호 발송 오류",
+      log: JSON.stringify(err),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(err);
   }
@@ -186,6 +190,12 @@ router.post("/sing-up", async (req, res, next) => {
           });
         }
 
+        await ServerLog.create({
+          student_id: studentId,
+          detail: "유저 정보 수정",
+          log: "",
+        });
+
         // 기존 유저에 대한 응답
         return res.status(201).send("기존 유저 데이터 갱신 완료");
       } else {
@@ -255,12 +265,21 @@ router.post("/sing-up", async (req, res, next) => {
           });
         }
 
+        await ServerLog.create({
+          student_id: studentId,
+          detail: "가입",
+        });
         return res.status(201).send("유저 데이터 생성 완료");
       }
     } else {
       return res.status(401).send("인증 번호가 일치하지 않습니다.");
     }
   } catch (error) {
+    await ServerLog.create({
+      student_id: studentId,
+      detail: "가입 오류",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
     next(error);
   }
@@ -300,6 +319,10 @@ router.post("/delete", async (req, res, next) => {
 
     // 삭제된 데이터가 있으면,
     if (!data) {
+      await ServerLog.create({
+        student_id: student_id,
+        detail: "정보 불일치 오류",
+      });
       return res.status(401).send("학번 / 핸드폰 번호 / 이름이 일치하지 않습니다. 관리자한테 문의해 주세요");
     }
     const user = await User.findOne({
@@ -307,13 +330,40 @@ router.post("/delete", async (req, res, next) => {
     });
 
     if (!user) {
+      await ServerLog.create({
+        student_id: student_id,
+        detail: "탈퇴",
+      });
       return res.status(201).send("완료되었습니다");
     } else {
+      await ServerLog.create({
+        student_id: student_id,
+        detail: "탈퇴 처리중 오류",
+      });
       return res.status(403).send("삭제가 완벽하게 이루어지지 않았습니다. 관리자한테 문의해 주세요");
     }
   } catch (error) {
     console.error(error);
+    await ServerLog.create({
+      student_id: student_id,
+      detail: "탈퇴중 서버 오류",
+      log: JSON.stringify(error),
+    });
     res.status(401).send("Server에서 문제가 발생했습니다.");
+    next(error);
+  }
+});
+
+router.get("/user-num", async (req, res, next) => {
+  try {
+    const data = await User.findAll({});
+
+    if (data.length >= 150) {
+      return res.status(400).send(false);
+    }
+
+    res.status(200).send(true);
+  } catch (error) {
     next(error);
   }
 });
