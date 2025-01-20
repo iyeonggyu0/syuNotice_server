@@ -4,8 +4,8 @@ const dotenv = require("dotenv");
 const https = require("https");
 const fs = require("fs");
 // const mySqlStore = require("express-mysql-session")(session);
-// const PORT = process.env.PORT || 3000;
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
+const applicationInsights = require("applicationinsights");
 
 const userRouter = require("./routes/user");
 // const noticeRouter = require("./routes/notice");
@@ -25,6 +25,16 @@ db.sequelize
 
 // cors error
 // 3030, 3000 ---> 3030 에러
+
+// Azure Application Insights 설정
+applicationInsights
+  .setup(process.env.APPLICATION_INSIGHTS_KEY) // 애저의 Instrumentation Key를 환경 변수로 설정해야 함
+  .setAutoCollectRequests(true) // 요청 자동 수집
+  .setAutoCollectDependencies(true) // 외부 의존성 자동 수집
+  .setAutoCollectPerformance(true) // 성능 모니터링
+  .setAutoCollectExceptions(true) // 예외 자동 수집
+  .setAutoCollectConsole(true) // 콘솔 로그 자동 수집
+  .start();
 
 const corsOptions = {
   origin: process.env.CLIENT_URL, // 클라이언트 출처 설정
