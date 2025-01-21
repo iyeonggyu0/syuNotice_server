@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const https = require("https");
 const fs = require("fs");
+require("dotenv").config();
 // const mySqlStore = require("express-mysql-session")(session);
 const PORT = process.env.PORT || 5000;
 const applicationInsights = require("applicationinsights");
@@ -37,7 +38,11 @@ applicationInsights
   .start();
 
 const corsOptions = {
-  origin: ["https://syunotice-frontend-server-dbajcghpdadrbect.koreacentral-01.azurewebsites.net", "https://syunotice.com", "https://www.syunotice.com"],
+  origin:
+    process.env.ALLOWED_ORIGINS?.split(",") ||
+    ["http://localhost:3000"][
+      ("https://syunotice-frontend-server-dbajcghpdadrbect.koreacentral-01.azurewebsites.net", "https://syunotice.com", "https://www.syunotice.com")
+    ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type"],
   credentials: true,

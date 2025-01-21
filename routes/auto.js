@@ -5,6 +5,7 @@ const cheerio = require("cheerio"); // cheerio 추가
 const { Op } = require("sequelize");
 const moment = require("moment");
 const FormData = require("form-data");
+require("dotenv").config();
 
 const express = require("express");
 const router = express.Router();

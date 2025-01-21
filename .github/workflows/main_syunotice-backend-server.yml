@@ -14,19 +14,46 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 1. Checkout repository
       - uses: actions/checkout@v4
 
+      # 2. Set up Node.js version
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: "20.x"
 
+      # 3. Create .env file with environment variables from Secrets
+      - name: Create .env file
+        run: |
+          echo DB_USERNAME=${{ secrets.DB_USERNAME }} >> .env
+          echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
+          echo DB_DATABASE=${{ secrets.DB_DATABASE }} >> .env
+          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+          echo DB_DIALECT=${{ secrets.DB_DIALECT }} >> .env
+          echo APPLICATION_INSIGHTS_KEY=${{ secrets.APPLICATION_INSIGHTS_KEY }} >> .env
+          echo ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} >> .env
+          echo CRYPTO_KEY=${{ secrets.CRYPTO_KEY }} >> .env
+          echo API_MSG_ON_KEY=${{ secrets.API_MSG_ON_KEY }} >> .env
+          echo API_MSG_ON_PN=${{ secrets.API_MSG_ON_PN }} >> .env
+          echo API_MSG_ON_ID=${{ secrets.API_MSG_ON_ID }} >> .env
+          echo API_MSG_URL_REMAINING=${{ secrets.API_MSG_URL_REMAINING }} >> .env
+          echo API_MSG_URL_LOG=${{ secrets.API_MSG_URL_LOG }} >> .env
+          echo API_MSG_URL_ONE_SEND=${{ secrets.API_MSG_URL_ONE_SEND }} >> .env
+          echo API_MSG_URL_SEND=${{ secrets.API_MSG_URL_SEND }} >> .env
+          echo URL_SCHOOL_NOTICE=${{ secrets.URL_SCHOOL_NOTICE }} >> .env
+          echo URL_SCHOOL_SCHOLARSHIP=${{ secrets.URL_SCHOOL_SCHOLARSHIP }} >> .env
+          echo URL_SCHOOL_EVENT=${{ secrets.URL_SCHOOL_EVENT }} >> .env
+          echo NODE_ENV=production >> .env
+          echo PORT=5000 >> .env
+
+      # 4. Install dependencies and build the app
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
-        # npm run test --if-present
 
+      # 5. Upload artifact for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -40,14 +67,16 @@ jobs:
       name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
+      # 1. Download artifact from build job
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
+      # 2. Login to Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -55,6 +84,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B31A6004E924436BB51AD2676E90D32D }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_AEB5A10D15CC4644878F2E6E0735954D }}
 
+      # 3. Deploy to Azure Web App
       - name: "Deploy to Azure Web App"
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp

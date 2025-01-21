@@ -9,6 +9,7 @@ const FormData = require("form-data");
 const https = require("https");
 const cheerio = require("cheerio");
 const moment = require("moment"); // 날짜 계산을 위해 moment.js를 사용
+require("dotenv").config();
 
 const { Notice, NoticeTag, UserTag, User, ServerLog } = require("../models");
 
