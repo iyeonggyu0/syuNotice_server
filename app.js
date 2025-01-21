@@ -38,13 +38,9 @@ applicationInsights
   .start();
 
 const corsOptions = {
-  origin:
-    process.env.ALLOWED_ORIGINS?.split(",") ||
-    ["http://localhost:3000"][
-      ("https://syunotice-frontend-server-dbajcghpdadrbect.koreacentral-01.azurewebsites.net", "https://syunotice.com", "https://www.syunotice.com")
-    ],
+  origin: ["https://syunotice-frontend-server-dbajcghpdadrbect.koreacentral-01.azurewebsites.net", "https://syunotice.com", "https://www.syunotice.com"],
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
