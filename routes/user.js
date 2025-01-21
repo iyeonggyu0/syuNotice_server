@@ -7,7 +7,6 @@ const axios = require("axios");
 const qs = require("qs");
 const FormData = require("form-data");
 const moment = require("moment");
-require("dotenv").config();
 
 const { User, UserTag, UserPNCerti, ServerLog } = require("../models");
 

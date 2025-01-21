@@ -31,7 +31,7 @@ jobs:
           echo DB_DATABASE=${{ secrets.DB_DATABASE }} >> .env
           echo DB_HOST=${{ secrets.DB_HOST }} >> .env
           echo DB_DIALECT=${{ secrets.DB_DIALECT }} >> .env
-          echo "APPLICATION_INSIGHTS_KEY=\"${{ secrets.APPLICATION_INSIGHTS_KEY }}\"" >> .env
+          echo "APPLICATION_INSIGHTS_KEY=InstrumentationKey=${{ secrets.APPLICATION_INSIGHTS_KEY }};IngestionEndpoint=https://koreacentral-0.in.applicationinsights.azure.com/" >> .env
           echo ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} >> .env
           echo CRYPTO_KEY=${{ secrets.CRYPTO_KEY }} >> .env
           echo API_MSG_ON_KEY=${{ secrets.API_MSG_ON_KEY }} >> .env
