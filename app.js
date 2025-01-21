@@ -37,10 +37,10 @@ applicationInsights
   .start();
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL, // 클라이언트 출처 설정
-  methods: ["GET", "POST", "PUT", "DELETE"], // 허용할 HTTP 메서드 설정
-  allowedHeaders: ["Content-Type"], // 허용할 요청 헤더 설정
-  credentials: true, // 쿠키와 자격 증명 허용
+  origin: ["https://syunotice-frontend-server-dbajcghpdadrbect.koreacentral-01.azurewebsites.net", "https://syunotice.com", "https://www.syunotice.com"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type"],
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
