@@ -5,7 +5,7 @@ const https = require("https");
 const fs = require("fs");
 require("dotenv").config(); // .env 파일의 내용을 로드
 // const mySqlStore = require("express-mysql-session")(session);
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 5000;
 const applicationInsights = require("applicationinsights");
 
 const userRouter = require("./routes/user");
@@ -63,6 +63,11 @@ app.use("/api/auto", autoRouter);
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} 요청 받음`);
   next();
+});
+
+app.use((err, req, res, next) => {
+  console.error(`Error occurred: ${err.message}`);
+  res.status(500).send("Internal Server Error");
 });
 
 app.get("/", (req, res) => {

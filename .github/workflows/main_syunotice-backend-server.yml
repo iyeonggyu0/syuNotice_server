@@ -51,7 +51,7 @@ jobs:
           echo URL_SCHOOL_SCHOLARSHIP=${{ secrets.URL_SCHOOL_SCHOLARSHIP }} >> .env
           echo URL_SCHOOL_EVENT=${{ secrets.URL_SCHOOL_EVENT }} >> .env
           echo NODE_ENV=production >> .env
-          echo PORT=80 >> .env
+          echo PORT=5000 >> .env
 
       # 4. Install dependencies and build the app
       - name: npm install, build, and test
