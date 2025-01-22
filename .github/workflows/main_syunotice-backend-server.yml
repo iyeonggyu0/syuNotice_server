@@ -50,8 +50,17 @@ jobs:
           echo URL_SCHOOL_NOTICE=${{ secrets.URL_SCHOOL_NOTICE }} >> .env
           echo URL_SCHOOL_SCHOLARSHIP=${{ secrets.URL_SCHOOL_SCHOLARSHIP }} >> .env
           echo URL_SCHOOL_EVENT=${{ secrets.URL_SCHOOL_EVENT }} >> .env
+          echo APPLICATIONINSIGHTS_CONNECTION_STRING=${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }} >> .env
+          echo ApplicationInsightsAgent_EXTENSION_VERSION=${{ secrets.ApplicationInsightsAgent_EXTENSION_VERSION }} >> .env
+          echo DIAGNOSTICS_AZUREBLOBRETENTIONINDAYS=${{ secrets.DIAGNOSTICS_AZUREBLOBRETENTIONINDAYS }} >> .env
+          echo WEBSITE_NODE_DEFAULT_VERSION=${{ secrets.WEBSITE_NODE_DEFAULT_VERSION }} >> .env
+          echo XDT_MicrosoftApplicationInsights_Mode=${{ secrets.XDT_MicrosoftApplicationInsights_Mode }} >> .env
+          echo XDT_MicrosoftApplicationInsights_NodeJS=${{ secrets.XDT_MicrosoftApplicationInsights_NodeJS }} >> .env
           echo NODE_ENV=production >> .env
           echo PORT=5000 >> .env
+
+      - name: Check .env file
+        run: cat .env
 
       # 4. Install dependencies and build the app
       - name: npm install, build, and test
@@ -98,3 +107,5 @@ jobs:
           app-name: "syunotice-backend-server"
           slot-name: "Production"
           package: .
+        env:
+          DEBUG: "true" # 디버깅 활성화
