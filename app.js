@@ -38,7 +38,12 @@ applicationInsights
   .start();
 
 const corsOptions = {
-  origin: ["https://syunotice-frontend-server-dbajcghpdadrbect.koreacentral-01.azurewebsites.net", "https://syunotice.com", "https://www.syunotice.com"],
+  origin: [
+    "https://syunotice-frontend-server-dbajcghpdadrbect.koreacentral-01.azurewebsites.net",
+    "https://syunotice.com",
+    "https://www.syunotice.com",
+    "syunotice-backend-server-djcph3a3c7dthyfh.koreacentral-01.azurewebsites.net",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -54,6 +59,18 @@ app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
 // 주석
 app.use("/api/auto", autoRouter);
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} 요청 받음`);
+  next();
+});
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Express Server is Running",
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`${PORT}포트에서 서버 실행중...`);
