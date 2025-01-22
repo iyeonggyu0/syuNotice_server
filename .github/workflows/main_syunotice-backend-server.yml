@@ -1,3 +1,9 @@
+# deploy
+# Failed to deploy web package to App Service.
+# deploy
+# Deployment Failed, Error: Failed to deploy web package using OneDeploy to App Service. Conflict (CODE: 409)
+# deploy
+# ubuntu-latest pipelines will use ubuntu-24.04 soon. For more details, see
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
