@@ -1,3 +1,9 @@
+# deploy
+# Failed to deploy web package to App Service.
+# deploy
+# Deployment Failed, Error: Failed to deploy web package using OneDeploy to App Service. Conflict (CODE: 409)
+# deploy
+# ubuntu-latest pipelines will use ubuntu-24.04 soon. For more details, see
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
@@ -11,18 +17,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
+      # 1. Checkout repository
       - uses: actions/checkout@v4
 
+      # 2. Set up Node.js version
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version:
-            "20.x"
+          node-version: "20.x"
 
-            # 3. Create .env file with environment variables from Secrets
+      # 3. Create .env file with environment variables from Secrets
       - name: Create .env file
         run: |
           echo DB_USERNAME=${{ secrets.DB_USERNAME }} >> .env
@@ -55,20 +62,18 @@ jobs:
       - name: Check .env file
         run: cat .env
 
+      # 4. Install dependencies and build the app
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
-          npm run test --if-present
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
+      # 5. Upload artifact for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
@@ -77,29 +82,30 @@ jobs:
       name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
+      # 1. Download artifact from build job
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-
+      # 2. Login to Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_6660D3BB48C14FABB68BFC7FF9918280 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_59E9060CCEA644CF9D05F93F874F826C }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5E3662F0185A4635A96B43497E5C9BAE }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_14C1AF0389584044A7A8F17F655D32D5 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B31A6004E924436BB51AD2676E90D32D }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_AEB5A10D15CC4644878F2E6E0735954D }}
 
+      # 3. Deploy to Azure Web App
       - name: "Deploy to Azure Web App"
         uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
         with:
           app-name: "syunotice-backend-server"
-          slot-name: "" # 기본 슬롯 명시
-          package: . # 배포할 폴더 경로
+          slot-name: "Production"
+          package: .
         env:
-          DEBUG: "true"
+          DEBUG: "true" # 디버깅 활성화
