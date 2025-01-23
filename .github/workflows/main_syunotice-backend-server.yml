@@ -17,7 +17,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       # 1. Checkout repository
@@ -99,13 +99,12 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B31A6004E924436BB51AD2676E90D32D }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_AEB5A10D15CC4644878F2E6E0735954D }}
 
-      # 3. Deploy to Azure Web App
       - name: "Deploy to Azure Web App"
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: "syunotice-backend-server"
-          slot-name: "Production"
-          package: .
+          slot-name: "Production" # 기본 슬롯 명시
+          package: . # 배포할 폴더 경로
         env:
-          DEBUG: "true" # 디버깅 활성화
+          DEBUG: "true"
