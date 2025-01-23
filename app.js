@@ -1,10 +1,9 @@
+require("dotenv").config(); // .env 파일의 내용을 로드
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const https = require("https");
 const fs = require("fs");
-require("dotenv").config(); // .env 파일의 내용을 로드
-// const mySqlStore = require("express-mysql-session")(session);
 const PORT = process.env.PORT || 5000;
 const applicationInsights = require("applicationinsights");
 

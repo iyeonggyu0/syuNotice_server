@@ -1,6 +1,5 @@
 // sequelize.js
 const { Sequelize } = require("sequelize");
-require("dotenv").config();
 const config = require("./config/config"); // config.js 파일 불러오기
 
 // 환경에 맞는 설정 선택
