@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -19,62 +19,25 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version:
-            "20.x"
-
-            # 3. Create .env file with environment variables from Secrets
-      - name: Create .env file
-        run: |
-          echo DB_USERNAME=${{ secrets.DB_USERNAME }} >> .env
-          echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
-          echo DB_DATABASE=${{ secrets.DB_DATABASE }} >> .env
-          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-          echo DB_DIALECT=${{ secrets.DB_DIALECT }} >> .env
-          echo "APPLICATION_INSIGHTS_KEY=InstrumentationKey=${{ secrets.APPLICATION_INSIGHTS_KEY }};IngestionEndpoint=https://koreacentral-0.in.applicationinsights.azure.com/" >> .env
-          echo ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} >> .env
-          echo CRYPTO_KEY=${{ secrets.CRYPTO_KEY }} >> .env
-          echo API_MSG_ON_KEY=${{ secrets.API_MSG_ON_KEY }} >> .env
-          echo API_MSG_ON_PN=${{ secrets.API_MSG_ON_PN }} >> .env
-          echo API_MSG_ON_ID=${{ secrets.API_MSG_ON_ID }} >> .env
-          echo API_MSG_URL_REMAINING=${{ secrets.API_MSG_URL_REMAINING }} >> .env
-          echo API_MSG_URL_LOG=${{ secrets.API_MSG_URL_LOG }} >> .env
-          echo API_MSG_URL_ONE_SEND=${{ secrets.API_MSG_URL_ONE_SEND }} >> .env
-          echo API_MSG_URL_SEND=${{ secrets.API_MSG_URL_SEND }} >> .env
-          echo URL_SCHOOL_NOTICE=${{ secrets.URL_SCHOOL_NOTICE }} >> .env
-          echo URL_SCHOOL_SCHOLARSHIP=${{ secrets.URL_SCHOOL_SCHOLARSHIP }} >> .env
-          echo URL_SCHOOL_EVENT=${{ secrets.URL_SCHOOL_EVENT }} >> .env
-          echo APPLICATIONINSIGHTS_CONNECTION_STRING=${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }} >> .env
-          echo ApplicationInsightsAgent_EXTENSION_VERSION=${{ secrets.ApplicationInsightsAgent_EXTENSION_VERSION }} >> .env
-          echo DIAGNOSTICS_AZUREBLOBRETENTIONINDAYS=${{ secrets.DIAGNOSTICS_AZUREBLOBRETENTIONINDAYS }} >> .env
-          echo WEBSITE_NODE_DEFAULT_VERSION=${{ secrets.WEBSITE_NODE_DEFAULT_VERSION }} >> .env
-          echo XDT_MicrosoftApplicationInsights_Mode=${{ secrets.XDT_MicrosoftApplicationInsights_Mode }} >> .env
-          echo XDT_MicrosoftApplicationInsights_NodeJS=${{ secrets.XDT_MicrosoftApplicationInsights_NodeJS }} >> .env
-          echo NODE_ENV=production >> .env
-          echo PORT=5000 >> .env
-
-      - name: Check .env file
-        run: cat .env
+          node-version: '20.x'
 
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
           npm run test --if-present
-
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: release.zip
+          path: .
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: "Production"
+      name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write #This is required for requesting the JWT
@@ -84,22 +47,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_6660D3BB48C14FABB68BFC7FF9918280 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_59E9060CCEA644CF9D05F93F874F826C }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5E3662F0185A4635A96B43497E5C9BAE }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_75119FEBA5C34D79BA7762731CBD883B }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_7E36D1A6F2464A28A1294E37E46417FB }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2892E6A4EC914E88A69D3AE352A4C9C3 }}
 
-      - name: "Deploy to Azure Web App"
+      - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
         with:
-          app-name: "syunotice-backend-server"
-          slot-name: "" # 기본 슬롯 명시
-          package: . # 배포할 폴더 경로
-        env:
-          DEBUG: "true"
+          app-name: 'syunotice-backend-server'
+          slot-name: 'Production'
+          package: .
+          
