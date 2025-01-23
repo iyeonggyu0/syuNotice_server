@@ -19,7 +19,40 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          node-version: "20.x"
+
+      - name: Create .env file
+        run: |
+          echo DB_USERNAME=${{ secrets.DB_USERNAME }} >> .env
+          echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
+          echo DB_DATABASE=${{ secrets.DB_DATABASE }} >> .env
+          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+          echo DB_DIALECT=${{ secrets.DB_DIALECT }} >> .env
+          echo "APPLICATION_INSIGHTS_KEY=InstrumentationKey=${{ secrets.APPLICATION_INSIGHTS_KEY }};IngestionEndpoint=https://koreacentral-0.in.applicationinsights.azure.com/" >> .env
+          echo ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} >> .env
+          echo CRYPTO_KEY=${{ secrets.CRYPTO_KEY }} >> .env
+          echo API_MSG_ON_KEY=${{ secrets.API_MSG_ON_KEY }} >> .env
+          echo API_MSG_ON_PN=${{ secrets.API_MSG_ON_PN }} >> .env
+          echo API_MSG_ON_ID=${{ secrets.API_MSG_ON_ID }} >> .env
+          echo API_MSG_URL_REMAINING=${{ secrets.API_MSG_URL_REMAINING }} >> .env
+          echo API_MSG_URL_LOG=${{ secrets.API_MSG_URL_LOG }} >> .env
+          echo API_MSG_URL_ONE_SEND=${{ secrets.API_MSG_URL_ONE_SEND }} >> .env
+          echo API_MSG_URL_SEND=${{ secrets.API_MSG_URL_SEND }} >> .env
+          echo URL_SCHOOL_NOTICE=${{ secrets.URL_SCHOOL_NOTICE }} >> .env
+          echo URL_SCHOOL_SCHOLARSHIP=${{ secrets.URL_SCHOOL_SCHOLARSHIP }} >> .env
+          echo URL_SCHOOL_EVENT=${{ secrets.URL_SCHOOL_EVENT }} >> .env
+          echo APPLICATIONINSIGHTS_CONNECTION_STRING=${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }} >> .env
+          echo ApplicationInsightsAgent_EXTENSION_VERSION=${{ secrets.ApplicationInsightsAgent_EXTENSION_VERSION }} >> .env
+          echo DIAGNOSTICS_AZUREBLOBRETENTIONINDAYS=${{ secrets.DIAGNOSTICS_AZUREBLOBRETENTIONINDAYS }} >> .env
+          echo WEBSITE_NODE_DEFAULT_VERSION=${{ secrets.WEBSITE_NODE_DEFAULT_VERSION }} >> .env
+          echo XDT_MicrosoftApplicationInsights_Mode=${{ secrets.XDT_MicrosoftApplicationInsights_Mode }} >> .env
+          echo XDT_MicrosoftApplicationInsights_NodeJS=${{ secrets.XDT_MicrosoftApplicationInsights_NodeJS }} >> .env
+          echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+          echo NODE_ENV=production >> .env
+          echo PORT=5000 >> .env
+
+      - name: Check .env file
+        run: cat .env
 
       - name: npm install, build, and test
         run: |
@@ -40,9 +73,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
+      name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -51,12 +84,12 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-      
-      - name: 'Deploy to Azure Web App'
+
+      - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'syunotice-backend-server'
-          slot-name: 'Production'
+          app-name: "syunotice-backend-server"
+          slot-name: "Production"
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_3AE8F9D3980F4DF586F9A6D3D6DBFB38 }}
