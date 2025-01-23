@@ -99,7 +99,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: "syunotice-backend-server"
-          slot-name: "Production" # 기본 슬롯 명시
+          slot-name: "" # 기본 슬롯 명시
           package: . # 배포할 폴더 경로
         env:
           DEBUG: "true"

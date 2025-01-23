@@ -1,5 +1,5 @@
 {
-  "name": "syuNotice_server",
+  "name": "syunotice-backend-server",
   "version": "1.0.0",
   "main": "app.js",
   "engines": {
