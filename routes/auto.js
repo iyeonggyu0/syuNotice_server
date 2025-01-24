@@ -12,7 +12,7 @@ const router = express.Router();
 const { Notice, NoticeTag, User, UserTag, ServerLog } = require("../models");
 
 // 매주 금요일 오후 2시에 실행되는 작업
-cron.schedule("0 8 * * 5", async (next) => {
+cron.schedule("0 5 * * 5", async (next) => {
   // router.get("/road", async (req, res, next) => {
   console.log("실행");
   await ServerLog.create({
