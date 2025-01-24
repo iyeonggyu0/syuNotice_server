@@ -296,7 +296,7 @@ cron.schedule("0 5 * * 5", async (next) => {
       if (행사Count > 0) messageContent += `- 행사 ${행사Count}건\n`;
       if (기타Count > 0) messageContent += `- 기타 ${기타Count}건\n`;
 
-      messageContent += `\n수신거부\nsyunotice.com/d`;
+      messageContent += `\n탈퇴:\nsyunotice.com/#/d`;
 
       // params에 메시지 추가
       params.append(`callTo_${index + 1}`, user.student_PN); // 수신자 번호
