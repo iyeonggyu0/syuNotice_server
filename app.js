@@ -57,9 +57,8 @@ app.use(express.urlencoded({ extended: true }));
 // app.use("/api/notice", noticeRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
-// 주석
-app.use("/api/auto", autoRouter);
 app.use("/api/log", logRouter);
+app.use("/api/auto", autoRouter);
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} 요청 받음`);
