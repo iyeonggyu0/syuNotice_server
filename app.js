@@ -11,6 +11,7 @@ const userRouter = require("./routes/user");
 // const noticeRouter = require("./routes/notice");
 const adminRouter = require("./routes/admin");
 const autoRouter = require("./routes/auto");
+const logRouter = require("./routes/log");
 
 const db = require("./models");
 
@@ -58,6 +59,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
 // 주석
 app.use("/api/auto", autoRouter);
+app.use("/api/log", logRouter);
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} 요청 받음`);
@@ -80,13 +82,11 @@ app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
     message: "Express Server is Running",
-    // dbConfig: {
-    //   username: process.env.DB_USERNAME,
-    //   password: process.env.DB_PASSWORD,
-    //   database: process.env.DB_DATABASE,
-    //   host: process.env.DB_HOST,
-    //   dialect: process.env.DB_DIALECT,
-    // },
+    dbConfig: {
+      URL_SCHOOL_NOTICE: URL_SCHOOL_NOTICE,
+      URL_SCHOOL_SCHOLARSHIP: URL_SCHOOL_SCHOLARSHIP,
+      URL_SCHOOL_EVENT: URL_SCHOOL_EVENT,
+    },
   });
 });
 

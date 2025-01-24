@@ -15,6 +15,9 @@ const { Notice, NoticeTag, User, UserTag, ServerLog } = require("../models");
 cron.schedule("0 14 * * 5", async (next) => {
   // router.get("/road", async (req, res, next) => {
   console.log("실행");
+  await ServerLog.create({
+    detail: "정규 작업 시작",
+  });
 
   const today = moment();
   const oneWeekAgo = today.clone().subtract(7, "days").set({ hour: 14, minute: 1, second: 0, millisecond: 0 });
