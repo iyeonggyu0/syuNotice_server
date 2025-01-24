@@ -1,7 +1,6 @@
 require("dotenv").config(); // .env 파일의 내용을 로드
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const https = require("https");
 const fs = require("fs");
 const PORT = process.env.PORT || 5000;
@@ -15,7 +14,6 @@ const logRouter = require("./routes/log");
 
 const db = require("./models");
 
-dotenv.config();
 const app = express();
 db.sequelize
   .sync()
@@ -82,9 +80,9 @@ app.get("/", (req, res) => {
     status: "success",
     message: "Express Server is Running",
     dbConfig: {
-      URL_SCHOOL_NOTICE: URL_SCHOOL_NOTICE,
-      URL_SCHOOL_SCHOLARSHIP: URL_SCHOOL_SCHOLARSHIP,
-      URL_SCHOOL_EVENT: URL_SCHOOL_EVENT,
+      URL_SCHOOL_NOTICE: process.env.URL_SCHOOL_NOTICE,
+      URL_SCHOOL_SCHOLARSHIP: process.env.URL_SCHOOL_SCHOLARSHIP,
+      URL_SCHOOL_EVENT: process.env.URL_SCHOOL_EVENT,
     },
   });
 });
