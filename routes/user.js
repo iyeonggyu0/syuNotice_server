@@ -98,6 +98,12 @@ router.post("/sing-up", async (req, res, next) => {
   const fiveMinutesAgo = moment().subtract(5, "minutes");
 
   try {
+    const data = await User.findAll({});
+
+    if (data.length >= 110) {
+      return res.status(400).send("사용자 인원 상한 도달");
+    }
+
     // 유저의 인증 데이터 찾기
     const matchingData = await UserPNCerti.findOne({
       where: {
