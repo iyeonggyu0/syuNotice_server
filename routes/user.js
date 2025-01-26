@@ -358,7 +358,7 @@ router.get("/user-num", async (req, res, next) => {
   try {
     const data = await User.findAll({});
 
-    if (data.length >= 150) {
+    if (data.length >= 110) {
       return res.status(400).send(false);
     }
 
