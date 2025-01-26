@@ -256,6 +256,8 @@ cron.schedule("0 5 * * 5", async (next) => {
 
     const today_ = new Date();
 
+    const currentMonth = today_.getMonth() + 1; // getMonth()는 0부터 시작하므로 +1
+
     // 이번 달의 첫날 (1일)
     const firstDayOfMonth = new Date(today_.getFullYear(), today_.getMonth(), 1);
 
@@ -316,7 +318,13 @@ cron.schedule("0 5 * * 5", async (next) => {
     params.append("mberId", process.env.API_MSG_ON_ID);
     params.append("accessKey", process.env.API_MSG_ON_KEY);
     params.append("callFrom", process.env.API_MSG_ON_PN);
-    // params.append("test_yu", "YS");
+
+    //
+    const params_to_keyword = new FormData();
+
+    params_to_keyword.append("mberId", process.env.API_MSG_ON_ID);
+    params_to_keyword.append("accessKey", process.env.API_MSG_ON_KEY);
+    params_to_keyword.append("callFrom", process.env.API_MSG_ON_PN);
 
     await userList.forEach((user, index) => {
       let 학사Count = 0;
@@ -342,18 +350,14 @@ cron.schedule("0 5 * * 5", async (next) => {
       // 행사 카운트 처리
       const 행사Count = user.UserTags.filter((tag) => tag.type === "행사").reduce((sum, tag) => sum + (counts["행사"] || 0), 0);
 
-      // 기타 카운트 처리
-      const 기타Count = user.UserTags.filter((tag) => tag.type === "").reduce((sum, tag) => sum + (tag.NoticeTags?.length || 0), 0);
-
       // 메시지 생성
-      let messageContent = `[syuNotice]\n${weekNumber}주 차:\n`;
+      let messageContent = `[syuNotice]\n${currentMonth}월 ${weekNumber}주 차:\n`;
 
       if (학사Count > 0) messageContent += `- 학사 ${학사Count}건\n`;
       if (장학Count > 0) messageContent += `- 장학 ${장학Count}건\n`;
       if (행사Count > 0) messageContent += `- 행사 ${행사Count}건\n`;
-      if (기타Count > 0) messageContent += `- 기타 ${기타Count}건\n`;
 
-      messageContent += `\n탈퇴:\nsyunotice.com/#/d`;
+      messageContent += `\n수신 거부:\nsyunotice.com/#/d`;
 
       // params에 메시지 추가
       params.append(`callTo_${index + 1}`, user.student_PN); // 수신자 번호
@@ -361,6 +365,25 @@ cron.schedule("0 5 * * 5", async (next) => {
 
       // 로그로 확인
       // console.log(`User ${index + 1} message:`, messageContent);
+
+      //
+      //
+      // User 태그 글 작성
+      const hasEmptyTypeTag = user.UserTags.some((userTag) => userTag.type === "");
+
+      if (hasEmptyTypeTag) {
+        let messageContent2 = `[syuNotice]\n키워드별 상세 안내\n\n`;
+        // type이 ""인 태그가 존재할 경우 실행
+        user.UserTags.forEach((userTag) => {
+          if (userTag.type === "" && userTag.NoticeTags.length > 0) {
+            messageContent2 += ` ${userTag.tag} ${userTag.NoticeTags.length}건\n`;
+          }
+        });
+
+        // params에 메시지 추가
+        params_to_keyword.append(`callTo_${index + 1}`, user.student_PN); // 수신자 번호
+        params_to_keyword.append(`smsTxt_${index + 1}`, messageContent2); // 문자 내용
+      }
     });
     // params.getBuffer(); // buffer로 데이터를 가져오기 위한 방법
 
@@ -375,7 +398,6 @@ cron.schedule("0 5 * * 5", async (next) => {
         },
       })
       .then((response) => {
-        console.log("결과:", response.data);
         if (response.data.resultCode === "0") {
           ServerLog.create({
             detail: "정규 문자 발송 성공 (auto)",
@@ -391,6 +413,35 @@ cron.schedule("0 5 * * 5", async (next) => {
       .catch((error) => {
         ServerLog.create({
           detail: "정규 문자 발송 실패 (auto)",
+          log: JSON.stringify(error),
+        });
+      });
+
+    //
+    //
+    // 키워드 발송
+    axios
+      .post(process.env.API_MSG_URL_SEND, params_to_keyword, {
+        headers: {
+          ...params_to_keyword.getHeaders(), // FormData 헤더
+        },
+      })
+      .then((response) => {
+        if (response.data.resultCode === "0") {
+          ServerLog.create({
+            detail: "정규 키워드 문자 발송 성공 (auto)",
+            log: JSON.stringify(response),
+          });
+        } else {
+          ServerLog.create({
+            detail: "정규 키워드 문자 발송 실패 resultCode (auto)",
+            log: JSON.stringify(response),
+          });
+        }
+      })
+      .catch((error) => {
+        ServerLog.create({
+          detail: "정규 키워드 문자 발송 실패 (auto)",
           log: JSON.stringify(error),
         });
       });
