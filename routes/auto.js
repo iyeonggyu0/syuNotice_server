@@ -369,10 +369,10 @@ cron.schedule("0 5 * * 5", async (next) => {
       //
       //
       // User 태그 글 작성
-      const hasEmptyTypeTag = user.UserTags.some((userTag) => userTag.type === "");
+      const hasValidNoticeTag = user.UserTags.some((userTag) => userTag.type === "" && userTag.NoticeTags.length > 0);
 
-      if (hasEmptyTypeTag) {
-        let messageContent2 = `[syuNotice]\n키워드별 상세 안내\n\n`;
+      if (hasValidNoticeTag) {
+        let messageContent2 = `[syuNotice]\n키워드별 공지\n\n`;
         // type이 ""인 태그가 존재할 경우 실행
         user.UserTags.forEach((userTag) => {
           if (userTag.type === "" && userTag.NoticeTags.length > 0) {
