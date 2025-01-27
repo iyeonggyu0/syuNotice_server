@@ -98,16 +98,16 @@ router.post("/sing-up", async (req, res, next) => {
   const fiveMinutesAgo = moment().subtract(5, "minutes");
 
   try {
-    const data = await User.findAll({});
+    const data_to_num = await User.findAll({});
 
-    if (data.length >= 110) {
-      const findDataUser = User.findOne({
+    if (data_to_num.length >= 110) {
+      const findDataUser = await User.findOne({
         where: {
           student_id: studentId,
         },
       });
       if (!findDataUser) {
-        return res.status(400).send("사용자 인원 상한 도달 되어 기존 정보과 일치하는 데이터의 수정만 가능합니다.");
+        return res.status(400).send("사용자 인원 상한 도달 되어 기존 정보와 일치하는 데이터의 수정만 가능합니다.");
       }
     }
 
