@@ -101,7 +101,14 @@ router.post("/sing-up", async (req, res, next) => {
     const data = await User.findAll({});
 
     if (data.length >= 110) {
-      return res.status(400).send("사용자 인원 상한 도달");
+      const findDataUser = User.findOne({
+        where: {
+          student_id: studentId,
+        },
+      });
+      if (!findDataUser) {
+        return res.status(400).send("사용자 인원 상한 도달 되어 기존 정보과 일치하는 데이터의 수정만 가능합니다.");
+      }
     }
 
     // 유저의 인증 데이터 찾기
