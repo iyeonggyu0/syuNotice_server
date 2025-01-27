@@ -82,6 +82,62 @@ cron.schedule("0 5 * * 5", async (next) => {
   //
   //
   //
+  // 학사공지2
+  try {
+    const url = `${process.env.URL_SCHOOL_NOTICE}page/2/`;
+
+    const agent = new https.Agent({
+      rejectUnauthorized: false, // SSL 인증서 검증 비활성화
+    });
+
+    // axios를 사용하여 웹 페이지 요청
+    const { data } = await axios.get(url, { httpsAgent: agent });
+
+    // cheerio로 HTML 파싱
+    const $ = cheerio.load(data);
+
+    // table.md_notice_tbl 안에 있는 tbody의 모든 tr 태그 찾기
+    const rows = $("table.md_notice_tbl tbody tr");
+
+    // 각 tr에 대해서 필요한 데이터 추출
+    for (const row of rows) {
+      const type = $(row).find("td.step2 h3 a .md_cate").text().trim();
+      const title = $(row).find("td.step2 h3 a .tit").text().trim(); // 제목 텍스트
+      const date = $(row).find("td.step4").text().trim(); // 날짜
+
+      const givenDate = moment(date, "YYYY.MM.DD");
+
+      if (givenDate.isBetween(oneWeekAgo, today)) {
+        const createData = await Notice.create({
+          notice_name: title,
+          notice_date: givenDate.toDate(),
+          type: type === "" ? "학사" : type === "수업" || type === "학적" || type === "등록" || type === "채플" ? type : "학사",
+        });
+
+        // 태그 검사 및 NoticeTag 생성
+        for (const tagObj of tagData) {
+          if (title.includes(tagObj.tag)) {
+            await NoticeTag.create({
+              notice_id: createData.notice_id, // 생성된 Notice의 ID 사용
+              userTag_id: tagObj.id,
+            });
+          }
+        }
+      }
+    }
+  } catch (error) {
+    // 에러 발생 시 로그 생성
+    await ServerLog.create({
+      detail: "학사공지 정규 작업 중 서버 오류",
+      log: JSON.stringify(error),
+    });
+    console.error("Error:", error.message);
+    next(error); // Express 에러 핸들러로 넘기기
+  }
+
+  //
+  //
+  //
   //
   // 장학공지
   const url2 = process.env.URL_SCHOOL_SCHOLARSHIP;
