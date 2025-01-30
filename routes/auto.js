@@ -383,45 +383,47 @@ cron.schedule("0 5 * * 5", async (next) => {
     params_to_keyword.append("callFrom", process.env.API_MSG_ON_PN);
 
     await userList.forEach((user, index) => {
-      let 학사Count = 0;
+      const targetTypes = ["수업", "학적", "등록", "채플", "장학", "행사"];
+      if (user.UserTags?.some((tag) => targetTypes.includes(tag.type)) || false) {
+        let 학사Count = 0;
 
-      // "수업", "등록", "학적", "채플" 네 가지 항목이 모두 존재하는지 체크
-      const 학사Tags = ["수업", "학적", "등록", "채플"];
-      const hasAll학사Tags = 학사Tags.every((tag) => user.UserTags.some((userTag) => userTag.type === tag));
+        // "수업", "등록", "학적", "채플" 네 가지 항목이 모두 존재하는지 체크
+        const 학사Tags = ["수업", "학적", "등록", "채플"];
+        const hasAll학사Tags = 학사Tags.every((tag) => user.UserTags.some((userTag) => userTag.type === tag));
 
-      if (hasAll학사Tags) {
-        // 모든 항목이 존재하는 경우: 학사, 수업, 학적, 등록, 채플 모두 더한 값을 학사Count에 할당
-        학사Count =
-          학사Tags.reduce((sum, tag) => {
-            return sum + (counts[tag] || 0);
-          }, 0) + (counts["학사"] || 0); // "학사"도 추가
-      } else {
-        // 일부 항목만 존재하는 경우: 존재하는 항목만 합산하여 학사Count에 할당
-        학사Count = user.UserTags.filter((tag) => 학사Tags.includes(tag.type)).reduce((sum, tag) => sum + (counts[tag.type] || 0), 0);
+        if (hasAll학사Tags) {
+          // 모든 항목이 존재하는 경우: 학사, 수업, 학적, 등록, 채플 모두 더한 값을 학사Count에 할당
+          학사Count =
+            학사Tags.reduce((sum, tag) => {
+              return sum + (counts[tag] || 0);
+            }, 0) + (counts["학사"] || 0); // "학사"도 추가
+        } else {
+          // 일부 항목만 존재하는 경우: 존재하는 항목만 합산하여 학사Count에 할당
+          학사Count = user.UserTags.filter((tag) => 학사Tags.includes(tag.type)).reduce((sum, tag) => sum + (counts[tag.type] || 0), 0);
+        }
+
+        // 장학 카운트 처리
+        const 장학Count = user.UserTags.filter((tag) => tag.type === "장학").reduce((sum, tag) => sum + (counts["장학"] || 0), 0);
+
+        // 행사 카운트 처리
+        const 행사Count = user.UserTags.filter((tag) => tag.type === "행사").reduce((sum, tag) => sum + (counts["행사"] || 0), 0);
+
+        // 메시지 생성
+        let messageContent = `[syuNotice]\n${currentMonth}월 ${weekNumber}주 차:\n`;
+
+        if (학사Count > 0) messageContent += `- 학사 ${학사Count}건\n`;
+        if (장학Count > 0) messageContent += `- 장학 ${장학Count}건\n`;
+        if (행사Count > 0) messageContent += `- 행사 ${행사Count}건\n`;
+
+        messageContent += `\n수신 거부:\nsyunotice.com/#/d`;
+
+        // params에 메시지 추가
+        params.append(`callTo_${index + 1}`, user.student_PN); // 수신자 번호
+        params.append(`smsTxt_${index + 1}`, messageContent); // 문자 내용
+
+        // 로그로 확인
+        // console.log(`User ${index + 1} message:`, messageContent);
       }
-
-      // 장학 카운트 처리
-      const 장학Count = user.UserTags.filter((tag) => tag.type === "장학").reduce((sum, tag) => sum + (counts["장학"] || 0), 0);
-
-      // 행사 카운트 처리
-      const 행사Count = user.UserTags.filter((tag) => tag.type === "행사").reduce((sum, tag) => sum + (counts["행사"] || 0), 0);
-
-      // 메시지 생성
-      let messageContent = `[syuNotice]\n${currentMonth}월 ${weekNumber}주 차:\n`;
-
-      if (학사Count > 0) messageContent += `- 학사 ${학사Count}건\n`;
-      if (장학Count > 0) messageContent += `- 장학 ${장학Count}건\n`;
-      if (행사Count > 0) messageContent += `- 행사 ${행사Count}건\n`;
-
-      messageContent += `\n수신 거부:\nsyunotice.com/#/d`;
-
-      // params에 메시지 추가
-      params.append(`callTo_${index + 1}`, user.student_PN); // 수신자 번호
-      params.append(`smsTxt_${index + 1}`, messageContent); // 문자 내용
-
-      // 로그로 확인
-      // console.log(`User ${index + 1} message:`, messageContent);
-
       //
       //
       // User 태그 글 작성
