@@ -409,11 +409,11 @@ cron.schedule("0 5 * * 5", async (next) => {
         const 행사Count = user.UserTags.filter((tag) => tag.type === "행사").reduce((sum, tag) => sum + (counts["행사"] || 0), 0);
 
         // 메시지 생성
-        let messageContent = `[syuNotice]\n${currentMonth}월 ${weekNumber}주 차:\n`;
+        let messageContent = `[syuNotice] ${currentMonth}월 ${weekNumber}주 차:\n\n`;
 
-        if (학사Count > 0) messageContent += `- 학사 ${학사Count}건\n`;
-        if (장학Count > 0) messageContent += `- 장학 ${장학Count}건\n`;
-        if (행사Count > 0) messageContent += `- 행사 ${행사Count}건\n`;
+        if (학사Count > 0) messageContent += `학사 ${학사Count}건\n`;
+        if (장학Count > 0) messageContent += `장학 ${장학Count}건\n`;
+        if (행사Count > 0) messageContent += `행사 ${행사Count}건\n`;
 
         messageContent += `\n수신 거부:\nsyunotice.com/#/d`;
 
@@ -430,13 +430,15 @@ cron.schedule("0 5 * * 5", async (next) => {
       const hasValidNoticeTag = user.UserTags.some((userTag) => userTag.type === "" && userTag.NoticeTags.length > 0);
 
       if (hasValidNoticeTag) {
-        let messageContent2 = `[syuNotice]\n키워드별 공지\n\n`;
+        let messageContent2 = `[syuNotice] 키워드 안내:\n\n`;
         // type이 ""인 태그가 존재할 경우 실행
         user.UserTags.forEach((userTag) => {
           if (userTag.type === "" && userTag.NoticeTags.length > 0) {
-            messageContent2 += ` ${userTag.tag} ${userTag.NoticeTags.length}건\n`;
+            messageContent2 += `${userTag.tag} ${userTag.NoticeTags.length}건\n`;
           }
         });
+
+        messageContent2 = `\n`;
 
         // params에 메시지 추가
         params_to_keyword.append(`callTo_${index + 1}`, user.student_PN); // 수신자 번호
