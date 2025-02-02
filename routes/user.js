@@ -194,8 +194,10 @@ router.post("/sing-up", async (req, res, next) => {
 
         // 키워드 처리
         if (decryptFun(data, studentId).keyword_4.length > 1) {
-          decryptFun(data, studentId).keyword_4.forEach((value) => {
-            UserTag.create({
+          decryptFun(data, studentId).keyword_4.forEach(async (value) => {
+            if (value === "") return; // value가 빈 문자열이면 현재 반복을 건너뜀
+
+            await UserTag.create({
               student_id: studentId,
               tag: value,
               type: "",
@@ -371,7 +373,7 @@ router.get("/user-num", async (req, res, next) => {
   try {
     const data = await User.findAll({});
 
-    if (data.length >= 110) {
+    if (data.length >= 150) {
       return res.status(400).send(false);
     }
 
