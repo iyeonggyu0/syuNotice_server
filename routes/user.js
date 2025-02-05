@@ -100,7 +100,7 @@ router.post("/sing-up", async (req, res, next) => {
   try {
     const data_to_num = await User.findAll({});
 
-    if (data_to_num.length >= 110) {
+    if (data_to_num.length >= 150) {
       const findDataUser = await User.findOne({
         where: {
           student_id: studentId,
